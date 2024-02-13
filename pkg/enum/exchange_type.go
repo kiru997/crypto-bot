@@ -15,26 +15,29 @@ const (
 	ExchangeTypeMexcFuture
 	ExchangeTypeOkx
 	ExchangeTypeBinance
+	ExchangeTypeBinanceFuture
 )
 
 const (
-	ExchangeTypeNameNone         = ""
-	ExchangeTypeNameKucoin       = "kucoin"
-	ExchangeTypeNameKucoinFuture = "kucoin_future"
-	ExchangeTypeNameMexc         = "mexc"
-	ExchangeTypeNameMexcFuture   = "mexc_future"
-	ExchangeTypeNameOkx          = "okx"
-	ExchangeTypeNameBinance      = "binance"
+	ExchangeTypeNameNone          = ""
+	ExchangeTypeNameKucoin        = "kucoin"
+	ExchangeTypeNameKucoinFuture  = "kucoin_future"
+	ExchangeTypeNameMexc          = "mexc"
+	ExchangeTypeNameMexcFuture    = "mexc_future"
+	ExchangeTypeNameOkx           = "okx"
+	ExchangeTypeNameBinance       = "binance"
+	ExchangeTypeNameBinanceFuture = "binance_future"
 )
 
 var ExchangeTypeName = map[ExchangeType]string{
-	ExchangeTypeNone:         "",
-	ExchangeTypeKucoin:       ExchangeTypeNameKucoin,
-	ExchangeTypeKucoinFuture: ExchangeTypeNameKucoinFuture,
-	ExchangeTypeMexc:         ExchangeTypeNameMexc,
-	ExchangeTypeMexcFuture:   ExchangeTypeNameMexcFuture,
-	ExchangeTypeOkx:          ExchangeTypeNameOkx,
-	ExchangeTypeBinance:      ExchangeTypeNameBinance,
+	ExchangeTypeNone:          "",
+	ExchangeTypeKucoin:        ExchangeTypeNameKucoin,
+	ExchangeTypeKucoinFuture:  ExchangeTypeNameKucoinFuture,
+	ExchangeTypeMexc:          ExchangeTypeNameMexc,
+	ExchangeTypeMexcFuture:    ExchangeTypeNameMexcFuture,
+	ExchangeTypeOkx:           ExchangeTypeNameOkx,
+	ExchangeTypeBinance:       ExchangeTypeNameBinance,
+	ExchangeTypeBinanceFuture: ExchangeTypeNameBinanceFuture,
 }
 
 var ExchangeTypeValue = func() map[string]ExchangeType {

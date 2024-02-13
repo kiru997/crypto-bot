@@ -79,7 +79,8 @@ func (s *ws) CreateConnection() (string, *websocket.Conn, *time.Ticker, error) {
 
 	go func() {
 		for range ticker.C {
-			if s.exchange.GetConfig().ExchangeType == enum.ExchangeTypeBinance {
+			exType := s.exchange.GetConfig().ExchangeType
+			if exType == enum.ExchangeTypeBinanceFuture || exType == enum.ExchangeTypeBinance {
 				// const deadline = 10 * time.Second
 				// err := c.WriteControl(websocket.PingMessage, s.exchange.GetPingMsg(), time.Now().Add(deadline))
 				// if err != nil {

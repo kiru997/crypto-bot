@@ -1,9 +1,16 @@
 [
     {
         "exchange": "mexc",
-        "enable": true,
+        "enable": false,
         "future_exchanges": [
             "mexc_future"
+        ]
+    },
+    {
+        "exchange": "binance",
+        "enable": true,
+        "future_exchanges": [
+            "binance_future"
         ]
     }
 ]

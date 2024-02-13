@@ -7,5 +7,5 @@ const (
 	BinanceWSMethodUnSubcribe = "UNSUBSCRIBE"
 
 	// 10 req/second
-	BinanceWSRequestSleep = time.Second / 10
+	BinanceWSRequestSleep = time.Second / 5
 )

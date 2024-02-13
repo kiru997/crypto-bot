@@ -2,8 +2,6 @@ package service
 
 import (
 	"encoding/json"
-	"fmt"
-	"strings"
 	"time"
 
 	"example.com/greetings/pkg/configs"
@@ -14,23 +12,19 @@ import (
 	jsoniter "github.com/json-iterator/go"
 )
 
-type exchange struct {
+type spotExchange struct {
 	configs       *configs.AppConfig
 	filterChannel map[string]struct{}
 }
 
-func NewExchange(configs *configs.AppConfig) ws.Exchange {
-	return &exchange{
+func NewSpotExchange(configs *configs.AppConfig) ws.Exchange {
+	return &spotExchange{
 		configs:       configs,
 		filterChannel: helper.ArrayToMap([]string{}),
 	}
 }
 
-func getParam(s string) string {
-	return fmt.Sprintf("%s@%s", strings.ToLower(strings.ReplaceAll(s, constants.CoinSymbolSeperateChar, "")), "ticker")
-}
-
-func (*exchange) GetSubcribeMsg(symbol string) []byte {
+func (*spotExchange) GetSubcribeMsg(symbol string) []byte {
 	data := map[string]interface{}{
 		"method": constants.BinanceWSMethodSubcribe,
 		"params": []string{getParam(symbol)},
@@ -43,7 +37,7 @@ func (*exchange) GetSubcribeMsg(symbol string) []byte {
 	return msg
 }
 
-func (*exchange) GetUnSubcribeMsg(symbol string) []byte {
+func (*spotExchange) GetUnSubcribeMsg(symbol string) []byte {
 	data := map[string]interface{}{
 		"method": constants.BinanceWSMethodUnSubcribe,
 		"params": []string{getParam(symbol)},
@@ -56,25 +50,24 @@ func (*exchange) GetUnSubcribeMsg(symbol string) []byte {
 	return msg
 }
 
-func (s *exchange) GetConfig() *ws.ExChangeConfig {
+func (s *spotExchange) GetConfig() *ws.ExChangeConfig {
 	return &ws.ExChangeConfig{
 		ExchangeType:             enum.ExchangeTypeBinance,
-		TradingType:              enum.TradingTypeFuture,
+		TradingType:              enum.TradingTypeSpot,
 		RefreshConnectionMinutes: s.configs.Binance.RefreshConnectionMinutes,
 		MaxSubscriptions:         s.configs.Binance.MaxSubscriptions,
 	}
 }
 
-func (s *exchange) GetBaseURL() (string, error) {
-	return s.configs.Binance.WSFutureBaseURL, nil
+func (s *spotExchange) GetBaseURL() (string, error) {
+	return s.configs.Binance.WSSpotBaseURL, nil
 }
 
-func (s *exchange) GetPingMsg() []byte {
+func (s *spotExchange) GetPingMsg() []byte {
 	return []byte{}
 }
 
-func (s *exchange) FilterMsg(message []byte) bool {
-	channel := jsoniter.Get(message, "result").ToString()
-	_, skip := s.filterChannel[channel]
-	return skip
+func (s *spotExchange) FilterMsg(message []byte) bool {
+	id := jsoniter.Get(message, "id").ToInt()
+	return id != 0
 }

@@ -15,5 +15,5 @@ type FutureService interface {
 }
 
 func NewFutureService(configs *configs.AppConfig) FutureService {
-	return ws.NewWS(NewExchange(configs))
+	return ws.NewWS(NewFutureExchange(configs))
 }

@@ -58,6 +58,7 @@ func NewCompareService(configs *configs.AppConfig,
 	compareConfigs *configs.CompareConfig,
 	kucoinSpotService ks.KucoinSpotService,
 	kucoinFutureService ks.KucoinFutureService,
+	binanceService bs.SpotService,
 	binanceFutureService bs.FutureService,
 	mexcFutureService ms.FutureService,
 	mexcSpotService ms.SpotService,
@@ -68,16 +69,18 @@ func NewCompareService(configs *configs.AppConfig,
 		mapSymbolItem:  map[string]*dto.CompareSymbolNotiItem{},
 		priceItemChan:  make(chan *dto.ComparePriceChanMsg),
 		mapExchanges: map[enum.ExchangeType]ws.WS{
-			enum.ExchangeTypeKucoin:       kucoinSpotService,
-			enum.ExchangeTypeMexc:         mexcSpotService,
-			enum.ExchangeTypeMexcFuture:   mexcFutureService,
-			enum.ExchangeTypeOkx:          okxFutureService,
-			enum.ExchangeTypeKucoinFuture: kucoinFutureService,
-			enum.ExchangeTypeBinance:      binanceFutureService,
+			enum.ExchangeTypeKucoin:        kucoinSpotService,
+			enum.ExchangeTypeMexc:          mexcSpotService,
+			enum.ExchangeTypeMexcFuture:    mexcFutureService,
+			enum.ExchangeTypeOkx:           okxFutureService,
+			enum.ExchangeTypeKucoinFuture:  kucoinFutureService,
+			enum.ExchangeTypeBinance:       binanceService,
+			enum.ExchangeTypeBinanceFuture: binanceFutureService,
 		},
 		mapExchangeService: map[enum.ExchangeType]ExchangService{
-			enum.ExchangeTypeKucoin: kucoinSpotService,
-			enum.ExchangeTypeMexc:   mexcSpotService,
+			enum.ExchangeTypeKucoin:  kucoinSpotService,
+			enum.ExchangeTypeMexc:    mexcSpotService,
+			enum.ExchangeTypeBinance: binanceService,
 		},
 	}
 }
@@ -253,7 +256,7 @@ func (s *compareService) processMsg(msg *ws.MsgChan) {
 		s.processMexcSpotMsg(msg)
 	case enum.ExchangeTypeMexcFuture:
 		s.processMexcFutureMsg(msg)
-	case enum.ExchangeTypeBinance:
+	case enum.ExchangeTypeBinanceFuture, enum.ExchangeTypeBinance:
 		s.processBinanceMsg(msg)
 	case enum.ExchangeTypeOkx:
 		s.processOkxMsg(msg)

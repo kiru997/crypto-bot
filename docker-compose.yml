@@ -1,0 +1,12 @@
+version: "3.9"
+services:
+  app:
+    build:
+      dockerfile: Dockerfile.dev
+      context: .
+    volumes:
+      - .:/src/app
+      - /src/app/dist
+    ports:
+      - 9050:9050
+    entrypoint: modd --file=modd.conf

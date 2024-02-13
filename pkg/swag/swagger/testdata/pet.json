@@ -1,0 +1,64 @@
+{
+  "swaggerPerson": {
+    "type": "object",
+    "properties": {
+      "First": {
+        "type": "string"
+      }
+    }
+  },
+  "swaggerPet": {
+    "type": "object",
+    "required": [
+      "pointer"
+    ],
+    "properties": {
+      "Int": {
+        "type": "integer",
+        "format": "int32"
+      },
+      "IntArray": {
+        "type": "array",
+        "items": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "String": {
+        "type": "string",
+        "format": "string"
+      },
+      "StringArray": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "format": "string"
+        }
+      },
+      "bool": {
+        "type": "boolean",
+        "format": "boolean"
+      },
+      "friend": {
+        "$ref": "#/definitions/swaggerPerson",
+        "format": "object",
+        "type": "object"
+      },
+      "friends": {
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/swaggerPerson"
+        }
+      },
+      "pointer": {
+        "$ref": "#/definitions/swaggerPerson"
+      },
+      "pointers": {
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/swaggerPerson"
+        }
+      }
+    }
+  }
+}

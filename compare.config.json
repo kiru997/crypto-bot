@@ -1,0 +1,9 @@
+[
+    {
+        "exchange": "mexc",
+        "enable": true,
+        "future_exchanges": [
+            "mexc_future"
+        ]
+    }
+]

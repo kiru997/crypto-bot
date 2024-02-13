@@ -1,0 +1,29 @@
+name: "Diff"
+port: ":9070"
+env: "local"
+debug: true
+log_level: "info"
+telegram:
+  bot_api_key: "6795424683:AAGfDDzWidMck1vHVrhutOmHSNBicv2uUfs"
+  chat_id: 1037727052
+kucoin:
+  spot_api_base_url: "https://api.kucoin.com"
+  future_api_base_url: "https://api-futures.kucoin.com"
+  refresh_connection_minutes: 10
+  max_subscriptions: 30
+  top_change_limit: 100
+mexc:
+  spot_api_base_url: "https://api.mexc.com"
+  ws_future_base_url: "wss://contract.mexc.com/edge"
+  ws_spot_base_url: "wss://wbs.mexc.com/ws"
+  refresh_connection_minutes: 30
+  max_subscriptions: 30
+  top_change_limit: 100
+okx:
+  ws_future_base_url: "wss://ws.okx.com:8443/ws/v5/public"
+  refresh_connection_minutes: 10
+  max_subscriptions: 30
+binance:
+  ws_future_base_url: "wss://fstream.binance.com/ws"
+  refresh_connection_minutes: 10
+  max_subscriptions: 30

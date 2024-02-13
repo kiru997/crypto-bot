@@ -4,8 +4,8 @@ env: "local"
 debug: true
 log_level: "info"
 telegram:
-  bot_api_key: "6795424683:AAGfDDzWidMck1vHVrhutOmHSNBicv2uUfs"
-  chat_id: 1037727052
+  bot_api_key: "api_key"
+  chat_id: 1111111111
 kucoin:
   spot_api_base_url: "https://api.kucoin.com"
   future_api_base_url: "https://api-futures.kucoin.com"

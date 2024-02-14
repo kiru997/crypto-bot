@@ -26,12 +26,12 @@ func NewSpotExchange(configs *configs.AppConfig) ws.Exchange {
 }
 
 func getSpotTopic(s string) string {
-	return fmt.Sprintf("%s%s", constants.BookerTickerParamsPrefix, strings.ReplaceAll(s, constants.CoinSymbolSeperateChar, ""))
+	return fmt.Sprintf("%s%s", constants.BookerTickerParamsPrefix, strings.ReplaceAll(s, constants.CoinSymbolSeparateChar, ""))
 }
 
-func (*spotExchange) GetSubcribeMsg(symbol string) []byte {
+func (*spotExchange) GetSubscribeMsg(symbol string) []byte {
 	data := map[string]interface{}{
-		"method": constants.MexcWSMethodSubcription,
+		"method": constants.MexcWSMethodSubscription,
 		"params": []string{getSpotTopic(symbol)},
 	}
 
@@ -39,9 +39,9 @@ func (*spotExchange) GetSubcribeMsg(symbol string) []byte {
 	return msg
 }
 
-func (*spotExchange) GetUnSubcribeMsg(symbol string) []byte {
+func (*spotExchange) GetUnSubscribeMsg(symbol string) []byte {
 	data := map[string]interface{}{
-		"method": constants.MexcWSMethodUnSubcription,
+		"method": constants.MexcWSMethodUnSubscription,
 		"params": []string{getSpotTopic(symbol)},
 	}
 
@@ -54,7 +54,7 @@ func (s *spotExchange) GetConfig() *ws.ExChangeConfig {
 		ExchangeType:             enum.ExchangeTypeMexc,
 		TradingType:              enum.TradingTypeSpot,
 		RefreshConnectionMinutes: s.configs.Mexc.RefreshConnectionMinutes,
-		MaxSubscriptions:         s.configs.Mexc.MaxSubscriptions,
+		MaxSubscriptions:         s.configs.Mexc.SpotMaxSubscriptions,
 	}
 }
 

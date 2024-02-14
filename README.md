@@ -1,3 +1,4 @@
 # crypto-bot
-noti change
 rename config.example.yml -> config.yml
+
+note : okx cant use

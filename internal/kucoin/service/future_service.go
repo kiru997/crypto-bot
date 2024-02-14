@@ -8,8 +8,8 @@ import (
 )
 
 type KucoinFutureService interface {
-	Subcribe(symbols []string) error
-	UnSubcribe(symbols []string) error
+	Subscribe(symbols []string) error
+	UnSubscribe(symbols []string) error
 	RefreshConn()
 	GetMsg() chan *ws.MsgChan
 	GetConnections() map[string]*idto.ConnectionItem
@@ -53,10 +53,10 @@ func (s *kucoinFutureService) RefreshConn() {
 	s.exchange.RefreshConn()
 }
 
-func (s *kucoinFutureService) Subcribe(symbols []string) error {
-	return s.exchange.Subcribe(symbols)
+func (s *kucoinFutureService) Subscribe(symbols []string) error {
+	return s.exchange.Subscribe(symbols)
 }
 
-func (s *kucoinFutureService) UnSubcribe(symbols []string) error {
-	return s.exchange.UnSubcribe(symbols)
+func (s *kucoinFutureService) UnSubscribe(symbols []string) error {
+	return s.exchange.UnSubscribe(symbols)
 }

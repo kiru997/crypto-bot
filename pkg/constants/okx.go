@@ -1,7 +1,7 @@
 package constants
 
 const (
-	OkxOPSubcribe         = "subscribe"
-	OkxOPUnSubcribe       = "unsubscribe"
+	OkxOPSubscribe        = "subscribe"
+	OkxOPUnSubscribe      = "unsubscribe"
 	OkxChannelIndexTicker = "index-tickers"
 )

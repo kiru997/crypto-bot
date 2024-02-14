@@ -20,15 +20,15 @@ type futureExchange struct {
 func NewFutureExchange(configs *configs.AppConfig) ws.Exchange {
 	return &futureExchange{
 		configs:       configs,
-		filterChannel: helper.ArrayToMap([]string{"pong", "rs.sub.ticker"}),
+		filterChannel: helper.ArrayToMap([]string{"pong", "rs.sub.ticker", ""}),
 	}
 }
 
-func (*futureExchange) GetSubcribeMsg(symbol string) []byte {
+func (*futureExchange) GetSubscribeMsg(symbol string) []byte {
 	data := map[string]interface{}{
 		"method": constants.MexcWSMethodSubTicker,
 		"param": map[string]string{
-			"symbol": strings.ReplaceAll(symbol, constants.CoinSymbolSeperateChar, "_"),
+			"symbol": strings.ReplaceAll(symbol, constants.CoinSymbolSeparateChar, constants.CoinSymbolSeparateCharUnderscore),
 		},
 	}
 
@@ -36,11 +36,11 @@ func (*futureExchange) GetSubcribeMsg(symbol string) []byte {
 	return msg
 }
 
-func (*futureExchange) GetUnSubcribeMsg(symbol string) []byte {
+func (*futureExchange) GetUnSubscribeMsg(symbol string) []byte {
 	data := map[string]interface{}{
 		"method": constants.MexcWSMethodUnSubTicker,
 		"param": map[string]string{
-			"symbol": strings.ReplaceAll(symbol, constants.CoinSymbolSeperateChar, "_"),
+			"symbol": strings.ReplaceAll(symbol, constants.CoinSymbolSeparateChar, constants.CoinSymbolSeparateCharUnderscore),
 		},
 	}
 
@@ -53,7 +53,7 @@ func (s *futureExchange) GetConfig() *ws.ExChangeConfig {
 		ExchangeType:             enum.ExchangeTypeMexcFuture,
 		TradingType:              enum.TradingTypeFuture,
 		RefreshConnectionMinutes: s.configs.Mexc.RefreshConnectionMinutes,
-		MaxSubscriptions:         s.configs.Mexc.MaxSubscriptions,
+		MaxSubscriptions:         s.configs.Mexc.FutureMaxSubscriptions,
 	}
 }
 
@@ -68,7 +68,7 @@ func (s *futureExchange) GetPingMsg() []byte {
 func (s *futureExchange) FilterMsg(message []byte) bool {
 	channel := jsoniter.Get(message, "channel").ToString()
 	_, skip := s.filterChannel[channel]
-	
+
 	notExist := false
 	if channel == "rs.error" {
 		dataMsg := jsoniter.Get(message, "data").ToString()

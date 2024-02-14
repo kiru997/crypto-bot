@@ -16,6 +16,10 @@ const (
 	ExchangeTypeOkx
 	ExchangeTypeBinance
 	ExchangeTypeBinanceFuture
+	ExchangeTypeBybit
+	ExchangeTypeBybitFuture
+	ExchangeTypeGate
+	ExchangeTypeGateFuture
 )
 
 const (
@@ -27,6 +31,10 @@ const (
 	ExchangeTypeNameOkx           = "okx"
 	ExchangeTypeNameBinance       = "binance"
 	ExchangeTypeNameBinanceFuture = "binance_future"
+	ExchangeTypeNameBybit         = "bybit"
+	ExchangeTypeNameBybitFuture   = "bybit_future"
+	ExchangeTypeNameGate          = "gate"
+	ExchangeTypeNameGateFuture    = "gate_future"
 )
 
 var ExchangeTypeName = map[ExchangeType]string{
@@ -38,6 +46,10 @@ var ExchangeTypeName = map[ExchangeType]string{
 	ExchangeTypeOkx:           ExchangeTypeNameOkx,
 	ExchangeTypeBinance:       ExchangeTypeNameBinance,
 	ExchangeTypeBinanceFuture: ExchangeTypeNameBinanceFuture,
+	ExchangeTypeBybit:         ExchangeTypeNameBybit,
+	ExchangeTypeBybitFuture:   ExchangeTypeNameBybitFuture,
+	ExchangeTypeGate:          ExchangeTypeNameGate,
+	ExchangeTypeGateFuture:    ExchangeTypeNameGateFuture,
 }
 
 var ExchangeTypeValue = func() map[string]ExchangeType {

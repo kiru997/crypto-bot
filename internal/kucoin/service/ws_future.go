@@ -32,13 +32,14 @@ func NewKucoinFutureExchange(configs *configs.AppConfig, c *kumex.ApiService) ws
 }
 
 func getFutureTopic(symbol string) string {
-	return constants.KucoinFutureTopicLv2Market + strings.ReplaceAll(symbol, constants.CoinSymbolSeperateChar, "")
+	s := strings.ReplaceAll(strings.ReplaceAll(symbol, constants.CoinSymbolSeparateChar, ""), constants.CoinUSDT, constants.CoinUSDTM)
+	return constants.KucoinFutureTopicMarketTicker + s
 }
 
-func (*kucoinFutureExchange) GetSubcribeMsg(symbol string) []byte {
+func (*kucoinFutureExchange) GetSubscribeMsg(symbol string) []byte {
 	data := &dto.WSWriteMessage{
 		ID:             helper.RandomNumber(13),
-		Type:           enum.WSWriteMsgTypeSubcribe,
+		Type:           enum.WSWriteMsgTypeSubscribe,
 		Topic:          getFutureTopic(symbol),
 		PrivateChannel: false,
 		Response:       true,
@@ -48,10 +49,10 @@ func (*kucoinFutureExchange) GetSubcribeMsg(symbol string) []byte {
 	return msg
 }
 
-func (*kucoinFutureExchange) GetUnSubcribeMsg(symbol string) []byte {
+func (*kucoinFutureExchange) GetUnSubscribeMsg(symbol string) []byte {
 	data := &dto.WSWriteMessage{
 		ID:             helper.RandomNumber(13),
-		Type:           enum.WSWriteMsgTypeUnsubcribe,
+		Type:           enum.WSWriteMsgTypeUnSubscribe,
 		Topic:          getFutureTopic(symbol),
 		PrivateChannel: false,
 		Response:       true,
@@ -66,7 +67,7 @@ func (s *kucoinFutureExchange) GetConfig() *ws.ExChangeConfig {
 		ExchangeType:             ienum.ExchangeTypeKucoinFuture,
 		TradingType:              ienum.TradingTypeFuture,
 		RefreshConnectionMinutes: s.configs.Kucoin.RefreshConnectionMinutes,
-		MaxSubscriptions:         s.configs.Kucoin.MaxSubscriptions,
+		MaxSubscriptions:         s.configs.Kucoin.FutureMaxSubscriptions,
 	}
 }
 

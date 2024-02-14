@@ -17,6 +17,8 @@ type AppConfig struct {
 	Mexc     MexcConfigs     `yaml:"mexc"`
 	Okx      OkxConfigs      `yaml:"okx"`
 	Binance  BinanceConfigs  `yaml:"binance"`
+	Bybit    BybitConfigs    `yaml:"bybit"`
+	Gate     GateConfigs     `yaml:"gate"`
 }
 
 func NewConfig(configPath string) (*AppConfig, error) {

@@ -14,9 +14,8 @@ import (
 )
 
 type KucoinSpotService interface {
-	MarketAllTicket() (kucoin.TickersModel, error)
-	Subcribe(symbols []string) error
-	UnSubcribe(symbols []string) error
+	Subscribe(symbols []string) error
+	UnSubscribe(symbols []string) error
 	RefreshConn()
 	GetMsg() chan *ws.MsgChan
 	GetConnections() map[string]*idto.ConnectionItem
@@ -35,18 +34,6 @@ func NewKucoinSpotService(configs *configs.AppConfig, c *kucoin.ApiService) Kuco
 		c:        c,
 		exchange: ws.NewWS(NewKucoinExchange(configs, c)),
 	}
-}
-
-func (s *kucoinSpotService) MarketAllTicket() (kucoin.TickersModel, error) {
-	resp, err := s.c.Tickers()
-	if err != nil {
-		return nil, err
-	}
-
-	os := &kucoin.TickersResponseModel{}
-	resp.ReadData(&os)
-
-	return os.Tickers, nil
 }
 
 func (s *kucoinSpotService) TopChange(_ context.Context) ([]string, error) {
@@ -91,10 +78,10 @@ func (s *kucoinSpotService) RefreshConn() {
 	s.exchange.RefreshConn()
 }
 
-func (s *kucoinSpotService) Subcribe(symbols []string) error {
-	return s.exchange.Subcribe(symbols)
+func (s *kucoinSpotService) Subscribe(symbols []string) error {
+	return s.exchange.Subscribe(symbols)
 }
 
-func (s *kucoinSpotService) UnSubcribe(symbols []string) error {
-	return s.exchange.UnSubcribe(symbols)
+func (s *kucoinSpotService) UnSubscribe(symbols []string) error {
+	return s.exchange.UnSubscribe(symbols)
 }

@@ -4,7 +4,7 @@ import "time"
 
 const (
 	EnvLocal                = "local"
-	MinDiffPercent          = 1.5
+	MinDiffPercent          = 2
 	MinIntervalNoti         = time.Minute * 15
 	MaxPriceTimeDiffSeconds = 60
 )

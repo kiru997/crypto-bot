@@ -7,8 +7,8 @@ import (
 )
 
 type FutureService interface {
-	Subcribe(symbols []string) error
-	UnSubcribe(symbols []string) error
+	Subscribe(symbols []string) error
+	UnSubscribe(symbols []string) error
 	RefreshConn()
 	GetMsg() chan *ws.MsgChan
 	GetConnections() map[string]*idto.ConnectionItem

@@ -3,20 +3,17 @@ package service
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"io"
-	"net/http"
 	"sort"
 	"strings"
 
-	"example.com/greetings/internal/binance/dto"
+	"example.com/greetings/internal/bybit/dto"
 	idto "example.com/greetings/internal/dto"
 	"example.com/greetings/pkg/configs"
 	"example.com/greetings/pkg/constants"
-	"example.com/greetings/pkg/http_client"
 	"example.com/greetings/pkg/ws"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
+	bybit "github.com/wuhewuhe/bybit.go.api"
 )
 
 type SpotService interface {
@@ -25,7 +22,7 @@ type SpotService interface {
 	RefreshConn()
 	GetMsg() chan *ws.MsgChan
 	GetConnections() map[string]*idto.ConnectionItem
-	TopChange(ctx context.Context) ([]string, error)
+	TopChange(context.Context) ([]string, error)
 }
 
 type spotService struct {
@@ -41,36 +38,39 @@ func NewSpotService(configs *configs.AppConfig) SpotService {
 }
 
 func (s *spotService) TopChange(ctx context.Context) ([]string, error) {
-	response, err := http_client.JSONRequest(ctx, fmt.Sprintf("%s%s", s.configs.Binance.SpotAPIBaseURL, "/api/v3/ticker/24hr"), constants.HttpMethodGet, nil, nil)
+	client := bybit.NewBybitHttpClient("", "")
+	c := client.NewMarketInfoService(map[string]interface{}{
+		"category": "spot",
+	})
+
+	res, err := c.GetMarketTickers(ctx)
 	if err != nil {
-		return nil, errors.Wrap(err, "JSONRequest")
+		return nil, errors.Wrap(err, "GetMarketTickers")
 	}
 
-	if response.StatusCode != http.StatusOK {
-		return nil, errors.New(fmt.Sprintf("JSONRequest status code %v", response.StatusCode))
+	resBody, err := json.Marshal(res.Result)
+	if err != nil {
+		return nil, errors.Wrap(err, "Marshal")
 	}
 
-	defer response.Body.Close()
+	var mtres *dto.MarketTickers
 
-	resBody, err := io.ReadAll(response.Body)
-
-	var res *dto.SpotTicker24hRes
-	if err = json.Unmarshal(resBody, &res); err != nil {
+	if err = json.Unmarshal(resBody, &mtres); err != nil {
 		return nil, err
 	}
 
-	tickers := lo.Filter(*res, func(item *dto.SpotTicker24h, _ int) bool {
+	tickers := lo.Filter(mtres.List, func(item *dto.MarketTickerItem, _ int) bool {
 		return strings.Contains(item.Symbol, constants.CoinUSDT)
 	})
 
 	sort.Slice(tickers, func(i, j int) bool {
-		number, _ := tickers[i].PriceChangePercent.Float64()
-		numbeJr, _ := tickers[j].PriceChangePercent.Float64()
+		number, _ := tickers[i].Price24hPcnt.Float64()
+		numbeJr, _ := tickers[j].Price24hPcnt.Float64()
 		return number > numbeJr
 	})
 
-	if len(tickers) > s.configs.Binance.TopChangeLimit {
-		tickers = tickers[:s.configs.Binance.TopChangeLimit]
+	if len(tickers) > s.configs.Bybit.TopChangeLimit {
+		tickers = tickers[:s.configs.Bybit.TopChangeLimit]
 	}
 
 	result := make([]string, 0, len(tickers))

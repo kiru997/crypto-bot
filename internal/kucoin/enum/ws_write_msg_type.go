@@ -10,17 +10,17 @@ type WSWriteMsgType uint8
 const (
 	WSWriteMsgTypeNone WSWriteMsgType = iota
 	WSWriteMsgTypePing
-	WSWriteMsgTypeSubcribe
-	WSWriteMsgTypeUnsubcribe
+	WSWriteMsgTypeSubscribe
+	WSWriteMsgTypeUnSubscribe
 	WSWriteMsgTypeMessage
 )
 
 var WSWriteMsgTypeName = map[WSWriteMsgType]string{
-	WSWriteMsgTypeNone:       "",
-	WSWriteMsgTypePing:       "ping",
-	WSWriteMsgTypeSubcribe:   "subscribe",
-	WSWriteMsgTypeUnsubcribe: "unsubscribe",
-	WSWriteMsgTypeMessage:    "message",
+	WSWriteMsgTypeNone:        "",
+	WSWriteMsgTypePing:        "ping",
+	WSWriteMsgTypeSubscribe:   "subscribe",
+	WSWriteMsgTypeUnSubscribe: "unsubscribe",
+	WSWriteMsgTypeMessage:     "message",
 }
 
 var WSWriteMsgTypeValue = func() map[string]WSWriteMsgType {

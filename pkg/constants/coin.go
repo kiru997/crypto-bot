@@ -1,5 +1,8 @@
 package constants
 
 const (
-	CoinSymbolSeperateChar = "-"
+	CoinSymbolSeparateChar           = "-"
+	CoinSymbolSeparateCharUnderscore = "_"
+	CoinUSDT                         = "USDT"
+	CoinUSDTM                        = "USDTM"
 )

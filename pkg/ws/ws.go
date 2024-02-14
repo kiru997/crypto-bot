@@ -32,13 +32,13 @@ type Exchange interface {
 	GetBaseURL() (string, error)
 	GetPingMsg() []byte
 	FilterMsg([]byte) bool
-	GetSubcribeMsg(string) []byte
-	GetUnSubcribeMsg(string) []byte
+	GetSubscribeMsg(string) []byte
+	GetUnSubscribeMsg(string) []byte
 }
 
 type WS interface {
-	Subcribe(symbols []string) error
-	UnSubcribe(symbols []string) error
+	Subscribe(symbols []string) error
+	UnSubscribe(symbols []string) error
 	RefreshConn()
 	GetMsg() chan *MsgChan
 	GetConnections() map[string]*dto.ConnectionItem
@@ -48,6 +48,7 @@ type MsgChan struct {
 	ExchangeType enum.ExchangeType
 	TradingType  enum.TradingType
 	Msg          []byte
+	ConnID       string
 }
 
 func NewWS(ex Exchange) WS {
@@ -60,17 +61,17 @@ func NewWS(ex Exchange) WS {
 	}
 }
 
-func (s *ws) CreateConnection() (string, *websocket.Conn, *time.Ticker, error) {
+func (s *ws) CreateConnection() (*dto.ConnectionItem, error) {
 	cID := uuid.NewString()
 
 	url, err := s.exchange.GetBaseURL()
 	if err != nil {
-		return "", nil, nil, err
+		return nil, err
 	}
 
 	c, _, err := websocket.DefaultDialer.Dial(url, nil)
 	if err != nil {
-		return "", nil, nil, err
+		return nil, err
 	}
 
 	const pingTime = time.Second * 15
@@ -103,19 +104,30 @@ func (s *ws) CreateConnection() (string, *websocket.Conn, *time.Ticker, error) {
 		for {
 			_, message, err := c.ReadMessage()
 			if err != nil {
-				connIDs := []string{}
-
-				s.l.Lock()
-
-				for k := range s.mapConnections {
-					connIDs = append(connIDs, k)
+				conn, existConn := s.mapConnections[cID]
+				if !existConn {
+					return
 				}
 
-				s.l.Unlock()
-				log.Error("ws CreateConnection ReadMessage error", log.String("cId", cID), log.Any("error", err), log.Any("conn", connIDs),
-					log.String("exchange", enum.ExchangeTypeName[s.exchange.GetConfig().ExchangeType]))
+				if conn.Done {
+					return
+				}
 
-				return
+				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+					connIDs := []string{}
+					
+					s.l.Lock()
+
+					for k := range s.mapConnections {
+						connIDs = append(connIDs, k)
+					}
+
+					s.l.Unlock()
+					log.Error("ws CreateConnection ReadMessage error", log.String("cId", cID), log.Any("error", err), log.Any("conn", connIDs),
+						log.String("exchange", enum.ExchangeTypeName[s.exchange.GetConfig().ExchangeType]))
+				}
+
+				break
 			}
 
 			if s.exchange.FilterMsg(message) {
@@ -126,12 +138,21 @@ func (s *ws) CreateConnection() (string, *websocket.Conn, *time.Ticker, error) {
 				ExchangeType: s.exchange.GetConfig().ExchangeType,
 				TradingType:  s.exchange.GetConfig().TradingType,
 				Msg:          message,
+				ConnID:       cID,
 			}
 
 		}
 	}()
 
-	return cID, c, ticker, nil
+	return &dto.ConnectionItem{
+		ID:           cID,
+		T:            time.Now(),
+		Conn:         c,
+		Symbols:      []string{},
+		Ticker:       ticker,
+		ExchangeType: s.exchange.GetConfig().ExchangeType,
+		TradingType:  s.exchange.GetConfig().TradingType,
+	}, nil
 }
 
 func (s *ws) RefreshConn() {
@@ -139,35 +160,40 @@ func (s *ws) RefreshConn() {
 
 	defer s.l.Unlock()
 
+	symbols := []string{}
+
 	for id, v := range s.mapConnections {
 		if time.Since(v.T) < time.Duration(s.exchange.GetConfig().RefreshConnectionMinutes)*time.Minute {
 			continue
 		}
 
-		log.Debug("ws RefreshConn run", log.String("id", id), log.Time("initAt", v.T),
-			log.String("exchange", enum.ExchangeTypeName[s.exchange.GetConfig().ExchangeType]))
+		s.UnSubscribe(v.Symbols)
 		v.Close()
-
-		symbols := v.Symbols
 
 		delete(s.mapConnections, id)
 
-		err := s.Subcribe(symbols)
-		if err != nil {
-			log.Error("ws RefreshConn error", log.Any("error", err), log.String("id", id), log.Time("initAt", v.T),
-				log.String("exchange", enum.ExchangeTypeName[s.exchange.GetConfig().ExchangeType]))
-		}
+		log.Debug("ws RefreshConn delete conn", log.String("id", id), log.Time("initAt", v.T),
+			log.String("exchange", enum.ExchangeTypeName[s.exchange.GetConfig().ExchangeType]))
+
+		symbols = append(symbols, v.Symbols...)
+	}
+
+	err := s.Subscribe(symbols)
+	if err != nil {
+		log.Error("ws RefreshConn error", log.Any("error", err), log.String("exchange", enum.ExchangeTypeName[s.exchange.GetConfig().ExchangeType]))
 	}
 }
 
-func (s *ws) Subcribe(symbols []string) error {
+func (s *ws) Subscribe(symbols []string) error {
+	dupSym := lo.FindDuplicates(symbols)
+	log.Debug("Subscribe items", log.Any("symbols", symbols), log.Any("dup", dupSym))
 	if len(symbols) == 0 {
 		return nil
 	}
 
 	for _, symbol := range symbols {
 		skipInit := false
-		msg := s.exchange.GetSubcribeMsg(symbol)
+		msg := s.exchange.GetSubscribeMsg(symbol)
 
 		for connID, conn := range s.mapConnections {
 			if len(conn.Symbols) >= s.exchange.GetConfig().MaxSubscriptions {
@@ -176,67 +202,63 @@ func (s *ws) Subcribe(symbols []string) error {
 
 			err := conn.Conn.WriteMessage(websocket.TextMessage, msg)
 			if err != nil {
-				log.Error("ws Subcribe WriteMessage subcribe symbol error", log.Any("error", err), log.String("symbol", symbol), log.String("exchange", enum.ExchangeTypeName[s.exchange.GetConfig().ExchangeType]))
+				log.Error("ws Subscribe WriteMessage subscribe symbol error", log.Any("error", err), log.String("symbol", symbol), log.String("exchange", enum.ExchangeTypeName[s.exchange.GetConfig().ExchangeType]))
 			} else {
 				conn.Symbols = append(conn.Symbols, symbol)
 				s.mapSymbols[symbol] = connID
 			}
-			log.Debug("ws Subcribe done", log.String("symbol", symbol), log.Int("numberConnections", len(s.mapConnections)), log.String("exchange", enum.ExchangeTypeName[s.exchange.GetConfig().ExchangeType]))
+			log.Debug("ws Subscribe done", log.String("symbol", symbol), log.String("id", connID),
+				log.Int("numberConnections", len(s.mapConnections)), log.String("exchange", enum.ExchangeTypeName[s.exchange.GetConfig().ExchangeType]))
 
 			skipInit = true
+			break
 		}
 
 		if skipInit {
 			continue
 		}
 
-		connID, c, ticker, err := s.CreateConnection()
+		connItem, err := s.CreateConnection()
 		if err != nil {
-			log.Error("ws Subcribe CreateConnection error", log.Any("error", err), log.String("symbol", symbol), log.String("exchange", enum.ExchangeTypeName[s.exchange.GetConfig().ExchangeType]))
+			log.Error("ws Subscribe CreateConnection error", log.Any("error", err), log.String("symbol", symbol), log.String("exchange", enum.ExchangeTypeName[s.exchange.GetConfig().ExchangeType]))
 			continue
 		}
 
-		cI := &dto.ConnectionItem{
-			T:            time.Now(),
-			Conn:         c,
-			Ticker:       ticker,
-			ExchangeType: s.exchange.GetConfig().ExchangeType,
-			TradingType:  s.exchange.GetConfig().TradingType,
-		}
-
-		err = c.WriteMessage(websocket.TextMessage, msg)
+		err = connItem.Conn.WriteMessage(websocket.TextMessage, msg)
 		if err != nil {
-			log.Error("ws Subcribe WriteMessage ping error", log.Any("error", err), log.String("symbol", symbol), log.String("exchange", enum.ExchangeTypeName[s.exchange.GetConfig().ExchangeType]))
+			log.Error("ws Subscribe WriteMessage ping error", log.Any("error", err), log.String("symbol", symbol), log.String("exchange", enum.ExchangeTypeName[s.exchange.GetConfig().ExchangeType]))
 		} else {
-			cI.Symbols = append(cI.Symbols, symbol)
-			s.mapSymbols[symbol] = connID
+			connItem.Symbols = append(connItem.Symbols, symbol)
+			s.mapSymbols[symbol] = connItem.ID
 		}
 
-		s.mapConnections[connID] = cI
-
-		log.Debug("ws Subcribe done", log.String("symbol", symbol), log.Int("numberConnections", len(s.mapConnections)), log.String("exchange", enum.ExchangeTypeName[s.exchange.GetConfig().ExchangeType]))
+		s.mapConnections[connItem.ID] = connItem
+		log.Debug("ws Subscribe done", log.String("id", connItem.ID),
+			log.String("symbol", symbol), log.Int("numberConnections", len(s.mapConnections)), log.String("exchange", enum.ExchangeTypeName[s.exchange.GetConfig().ExchangeType]))
 	}
 
 	return nil
 }
 
-func (s *ws) UnSubcribe(symbols []string) error {
+func (s *ws) UnSubscribe(symbols []string) error {
+	log.Debug("UnSubscribe items", log.Any("symbols", symbols))
 	for _, symbol := range symbols {
 		connID, ok := s.mapSymbols[symbol]
 		if !ok {
-			log.Warn("ws UnSubcribe not found map Symbol", log.String("symbol", symbol), log.String("exchange", enum.ExchangeTypeName[s.exchange.GetConfig().ExchangeType]))
+			log.Warn("ws UnSubscribe not found map Symbol", log.String("symbol", symbol), log.String("exchange", enum.ExchangeTypeName[s.exchange.GetConfig().ExchangeType]))
 			continue
 		}
 
 		conn, ok := s.mapConnections[connID]
 		if !ok {
-			log.Warn("ws UnSubcribe not found map connections", log.String("symbol", symbol), log.String("exchange", enum.ExchangeTypeName[s.exchange.GetConfig().ExchangeType]))
+			log.Warn("ws UnSubscribe not found map connections",
+				log.String("connId", connID), log.String("symbol", symbol), log.String("exchange", enum.ExchangeTypeName[s.exchange.GetConfig().ExchangeType]))
 			continue
 		}
 
-		err := conn.Conn.WriteMessage(websocket.TextMessage, s.exchange.GetUnSubcribeMsg(symbol))
+		err := conn.Conn.WriteMessage(websocket.TextMessage, s.exchange.GetUnSubscribeMsg(symbol))
 		if err != nil {
-			log.Error("ws UnSubcribe WriteMessage error", log.Any("error", err), log.String("symbol", symbol),
+			log.Error("ws UnSubscribe WriteMessage error", log.Any("error", err), log.String("symbol", symbol),
 				log.String("exchange", enum.ExchangeTypeName[s.exchange.GetConfig().ExchangeType]))
 		}
 
@@ -246,24 +268,12 @@ func (s *ws) UnSubcribe(symbols []string) error {
 
 		delete(s.mapSymbols, symbol)
 
-		if len(conn.Symbols) == 0 {
-			conn.Close()
-			delete(s.mapConnections, connID)
-		}
-
-		log.Debug("ws UnSubcribe done", log.String("newConnId", connID),
+		log.Debug("ws UnSubscribe done", log.String("connId", connID),
 			log.String("symbol", symbol), log.Int("numberConnections", len(s.mapConnections)),
 			log.String("exchange", enum.ExchangeTypeName[s.exchange.GetConfig().ExchangeType]))
 	}
 
-	initSymbol := []string{}
-	for cID, v := range s.mapConnections {
-		initSymbol = append(initSymbol, v.Symbols...)
-		v.Close()
-		delete(s.mapConnections, cID)
-	}
-
-	return s.Subcribe(initSymbol)
+	return nil
 }
 
 func (s *ws) GetMsg() chan *MsgChan {

@@ -26,4 +26,5 @@ type ComparePriceChanMsg struct {
 	Symbol       string
 	Price        float64
 	At           time.Time
+	ConID        string
 }

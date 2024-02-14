@@ -34,10 +34,10 @@ func getTopic(symbol string) string {
 	return constants.KucoinTopicMarketTicker + symbol
 }
 
-func (*kucoinExchange) GetSubcribeMsg(symbol string) []byte {
+func (*kucoinExchange) GetSubscribeMsg(symbol string) []byte {
 	data := &dto.WSWriteMessage{
 		ID:             helper.RandomNumber(13),
-		Type:           enum.WSWriteMsgTypeSubcribe,
+		Type:           enum.WSWriteMsgTypeSubscribe,
 		Topic:          getTopic(symbol),
 		PrivateChannel: false,
 		Response:       true,
@@ -47,10 +47,10 @@ func (*kucoinExchange) GetSubcribeMsg(symbol string) []byte {
 	return msg
 }
 
-func (*kucoinExchange) GetUnSubcribeMsg(symbol string) []byte {
+func (*kucoinExchange) GetUnSubscribeMsg(symbol string) []byte {
 	data := &dto.WSWriteMessage{
 		ID:             helper.RandomNumber(13),
-		Type:           enum.WSWriteMsgTypeUnsubcribe,
+		Type:           enum.WSWriteMsgTypeUnSubscribe,
 		Topic:          getTopic(symbol),
 		PrivateChannel: false,
 		Response:       true,
@@ -65,7 +65,7 @@ func (s *kucoinExchange) GetConfig() *ws.ExChangeConfig {
 		ExchangeType:             ienum.ExchangeTypeKucoin,
 		TradingType:              ienum.TradingTypeSpot,
 		RefreshConnectionMinutes: s.configs.Kucoin.RefreshConnectionMinutes,
-		MaxSubscriptions:         s.configs.Kucoin.MaxSubscriptions,
+		MaxSubscriptions:         s.configs.Kucoin.SpotMaxSubscriptions,
 	}
 }
 

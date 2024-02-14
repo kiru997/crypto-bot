@@ -8,9 +8,30 @@
     },
     {
         "exchange": "binance",
-        "enable": true,
+        "enable": false,
         "future_exchanges": [
             "binance_future"
+        ]
+    },
+    {
+        "exchange": "kucoin",
+        "enable": false,
+        "future_exchanges": [
+            "kucoin_future"
+        ]
+    },
+    {
+        "exchange": "bybit",
+        "enable": false,
+        "future_exchanges": [
+            "bybit_future"
+        ]
+    },
+    {
+        "exchange": "gate",
+        "enable": true,
+        "future_exchanges": [
+            "gate_future"
         ]
     }
 ]

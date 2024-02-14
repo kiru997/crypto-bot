@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
-	"time"
 
 	"example.com/greetings/pkg/configs"
 	"example.com/greetings/pkg/constants"
@@ -22,22 +21,21 @@ type futureExchange struct {
 func NewFutureExchange(configs *configs.AppConfig) ws.Exchange {
 	return &futureExchange{
 		configs:       configs,
-		filterChannel: helper.ArrayToMap([]string{}),
+		filterChannel: helper.ArrayToMap([]string{"ping", constants.BybitWSMethodSubscription, constants.BybitWSMethodUnSubscription}),
 	}
 }
 
-func getParam(s string) string {
-	return fmt.Sprintf("%s@%s", strings.ToLower(strings.ReplaceAll(s, constants.CoinSymbolSeparateChar, "")), "ticker")
+func getSymbol(symbol string) string {
+	return fmt.Sprintf("%s%s", constants.BybitTickerParamsPrefix, strings.ReplaceAll(symbol, constants.CoinSymbolSeparateChar+constants.CoinUSDT, constants.CoinUSDT))
 }
 
 func (*futureExchange) GetSubscribeMsg(symbol string) []byte {
 	data := map[string]interface{}{
-		"method": constants.BinanceWSMethodSubscribe,
-		"params": []string{getParam(symbol)},
-		"id":     helper.RandomNumber(13),
+		"op": constants.BybitWSMethodSubscription,
+		"args": []string{
+			getSymbol(symbol),
+		},
 	}
-
-	time.Sleep(constants.BinanceWSRequestSleep)
 
 	msg, _ := json.Marshal(data)
 	return msg
@@ -45,12 +43,11 @@ func (*futureExchange) GetSubscribeMsg(symbol string) []byte {
 
 func (*futureExchange) GetUnSubscribeMsg(symbol string) []byte {
 	data := map[string]interface{}{
-		"method": constants.BinanceWSMethodUnSubscribe,
-		"params": []string{getParam(symbol)},
-		"id":     helper.RandomNumber(13),
+		"op": constants.BybitWSMethodUnSubscription,
+		"args": []string{
+			getSymbol(symbol),
+		},
 	}
-
-	time.Sleep(constants.BinanceWSRequestSleep)
 
 	msg, _ := json.Marshal(data)
 	return msg
@@ -58,22 +55,23 @@ func (*futureExchange) GetUnSubscribeMsg(symbol string) []byte {
 
 func (s *futureExchange) GetConfig() *ws.ExChangeConfig {
 	return &ws.ExChangeConfig{
-		ExchangeType:             enum.ExchangeTypeBinanceFuture,
+		ExchangeType:             enum.ExchangeTypeBybitFuture,
 		TradingType:              enum.TradingTypeFuture,
-		RefreshConnectionMinutes: s.configs.Binance.RefreshConnectionMinutes,
-		MaxSubscriptions:         s.configs.Binance.FutureMaxSubscriptions,
+		RefreshConnectionMinutes: s.configs.Bybit.RefreshConnectionMinutes,
+		MaxSubscriptions:         s.configs.Bybit.FutureMaxSubscriptions,
 	}
 }
 
 func (s *futureExchange) GetBaseURL() (string, error) {
-	return s.configs.Binance.WSFutureBaseURL, nil
+	return s.configs.Bybit.WSFutureBaseURL, nil
 }
 
 func (s *futureExchange) GetPingMsg() []byte {
-	return []byte{}
+	return []byte(`{"op":"ping"}`)
 }
 
 func (s *futureExchange) FilterMsg(message []byte) bool {
-	id := jsoniter.Get(message, "id").ToInt()
-	return id != 0
+	channel := jsoniter.Get(message, "op").ToString()
+	_, skip := s.filterChannel[channel]
+	return skip
 }

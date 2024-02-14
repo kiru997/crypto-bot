@@ -7,7 +7,7 @@ import (
 )
 
 type DiffController interface {
-	SubcribeSymbols(c *gin.Context)
+	SubscribeSymbols(c *gin.Context)
 }
 
 type diffController struct {
@@ -27,5 +27,5 @@ func RegisterDiffController(
 		sv:  sv,
 	}
 
-	g.GET("/subcribe-symbols", c.SubcribeSymbols)
+	g.GET("/subscribe-symbols", c.SubscribeSymbols)
 }

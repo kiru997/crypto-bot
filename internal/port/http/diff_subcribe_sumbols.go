@@ -8,7 +8,7 @@ import (
 	"github.com/samber/lo"
 )
 
-func (c *diffController) SubcribeSymbols(ctx *gin.Context) {
+func (c *diffController) SubscribeSymbols(ctx *gin.Context) {
 	items := c.sv.GetCurrentSymbolItems()
 
 	result := map[string]interface{}{}

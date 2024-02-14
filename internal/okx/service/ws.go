@@ -27,9 +27,9 @@ type msgArgItem struct {
 	InstId  string `json:"instId"`
 }
 
-func (*exchange) GetSubcribeMsg(symbol string) []byte {
+func (*exchange) GetSubscribeMsg(symbol string) []byte {
 	data := map[string]interface{}{
-		"op": constants.OkxOPSubcribe,
+		"op": constants.OkxOPSubscribe,
 		"args": []*msgArgItem{{
 			Channel: constants.OkxChannelIndexTicker,
 			InstId:  symbol,
@@ -40,9 +40,9 @@ func (*exchange) GetSubcribeMsg(symbol string) []byte {
 	return msg
 }
 
-func (*exchange) GetUnSubcribeMsg(symbol string) []byte {
+func (*exchange) GetUnSubscribeMsg(symbol string) []byte {
 	data := map[string]interface{}{
-		"op": constants.OkxOPUnSubcribe,
+		"op": constants.OkxOPUnSubscribe,
 		"args": []*msgArgItem{{
 			Channel: constants.OkxChannelIndexTicker,
 			InstId:  symbol,
@@ -55,9 +55,9 @@ func (*exchange) GetUnSubcribeMsg(symbol string) []byte {
 func (s *exchange) GetConfig() *ws.ExChangeConfig {
 	return &ws.ExChangeConfig{
 		ExchangeType:             enum.ExchangeTypeOkx,
-		TradingType:              enum.TradingTypeFuture,
+		TradingType:              enum.TradingTypeSpot,
 		RefreshConnectionMinutes: s.configs.Okx.RefreshConnectionMinutes,
-		MaxSubscriptions:         s.configs.Okx.MaxSubscriptions,
+		MaxSubscriptions:         s.configs.Okx.SpotMaxSubscriptions,
 	}
 }
 

@@ -16,6 +16,7 @@ import (
 
 	kfsdk "github.com/Kucoin/kucoin-futures-go-sdk"
 	ksdk "github.com/Kucoin/kucoin-go-sdk"
+	"github.com/gateio/gateapi-go/v6"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
@@ -53,6 +54,12 @@ func main() {
 
 		fx.Provide(func() *configs.CompareConfig {
 			return compareConfig
+		}),
+
+		fx.Provide(func(cgf *configs.AppConfig) *gateapi.APIClient {
+			return gateapi.NewAPIClient(&gateapi.Configuration{
+				BasePath: cgf.Gate.SpotAPIBaseURL,
+			})
 		}),
 
 		fx.Provide(

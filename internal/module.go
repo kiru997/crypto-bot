@@ -2,6 +2,8 @@ package internal
 
 import (
 	"example.com/greetings/internal/binance"
+	"example.com/greetings/internal/bybit"
+	"example.com/greetings/internal/gate"
 	"example.com/greetings/internal/kucoin"
 	"example.com/greetings/internal/mexc"
 	"example.com/greetings/internal/okx"
@@ -16,6 +18,8 @@ var Module = fx.Options(
 	mexc.Module,
 	okx.Module,
 	binance.Module,
+	bybit.Module,
+	gate.Module,
 
 	fx.Provide(service.NewCompareService),
 

@@ -20,8 +20,8 @@ import (
 )
 
 type SpotService interface {
-	Subcribe(symbols []string) error
-	UnSubcribe(symbols []string) error
+	Subscribe(symbols []string) error
+	UnSubscribe(symbols []string) error
 	RefreshConn()
 	GetMsg() chan *ws.MsgChan
 	GetConnections() map[string]*idto.ConnectionItem
@@ -76,7 +76,7 @@ func (s *spotService) TopChange(ctx context.Context) ([]string, error) {
 	result := make([]string, 0, len(tickers))
 
 	for _, v := range tickers {
-		result = append(result, strings.ReplaceAll(v.Symbol, constants.CoinUSDT, constants.CoinSymbolSeperateChar+constants.CoinUSDT))
+		result = append(result, strings.ReplaceAll(v.Symbol, constants.CoinUSDT, constants.CoinSymbolSeparateChar+constants.CoinUSDT))
 	}
 
 	return result, nil
@@ -94,10 +94,10 @@ func (s *spotService) RefreshConn() {
 	s.exchange.RefreshConn()
 }
 
-func (s *spotService) Subcribe(symbols []string) error {
-	return s.exchange.Subcribe(symbols)
+func (s *spotService) Subscribe(symbols []string) error {
+	return s.exchange.Subscribe(symbols)
 }
 
-func (s *spotService) UnSubcribe(symbols []string) error {
-	return s.exchange.UnSubcribe(symbols)
+func (s *spotService) UnSubscribe(symbols []string) error {
+	return s.exchange.UnSubscribe(symbols)
 }

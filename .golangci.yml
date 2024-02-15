@@ -119,23 +119,25 @@ linters:
     - whitespace
     # - wrapcheck error wrap check
     - wsl
-# linters-settings:
-#   wsl:
-#     allow-assign-and-anything: true
-#     allow-separated-leading-comment: true
-#     allow-cuddle-declarations: true
-#     force-err-cuddling: true
-#   tagliatelle:
-#     case:
-#         # Use the struct field name to check the name of the struct tag.
-#         # Default: false
-#         use-field-name: false
-#         rules:
-#           # Any struct tag type can be used.
-#           # Support string case: `camel`, `pascal`, `kebab`, `snake`, `upperSnake`, `goCamel`, `goPascal`, `goKebab`, `goSnake`, `upper`, `lower`, `header`.
-#           json: snake
-#           bson: snake
-#           env: upperSnake
-#           envconfig: upperSnake
-#   # funlen:
+linters-settings:
+  # wsl:
+  #   allow-assign-and-anything: true
+  #   allow-separated-leading-comment: true
+  #   allow-cuddle-declarations: true
+  #   force-err-cuddling: true
+  tagliatelle:
+    case:
+        # Use the struct field name to check the name of the struct tag.
+        # Default: false
+        use-field-name: false
+        rules:
+          # Any struct tag type can be used.
+          # Support string case: `camel`, `pascal`, `kebab`, `snake`, `upperSnake`, `goCamel`, `goPascal`, `goKebab`, `goSnake`, `upper`, `lower`, `header`.
+          json: snake
+          bson: snake
+          env: upperSnake
+          yaml: snake
+          yml: snake
+          envconfig: upperSnake
+  # funlen:
   # lines: -1

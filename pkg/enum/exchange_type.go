@@ -20,6 +20,8 @@ const (
 	ExchangeTypeBybitFuture
 	ExchangeTypeGate
 	ExchangeTypeGateFuture
+	ExchangeTypeBitmart
+	ExchangeTypeBitmartFuture
 )
 
 const (
@@ -35,6 +37,8 @@ const (
 	ExchangeTypeNameBybitFuture   = "bybit_future"
 	ExchangeTypeNameGate          = "gate"
 	ExchangeTypeNameGateFuture    = "gate_future"
+	ExchangeTypeNameBitmart       = "bitmart"
+	ExchangeTypeNameBitmartFuture = "bitmart_future"
 )
 
 var ExchangeTypeName = map[ExchangeType]string{
@@ -50,6 +54,8 @@ var ExchangeTypeName = map[ExchangeType]string{
 	ExchangeTypeBybitFuture:   ExchangeTypeNameBybitFuture,
 	ExchangeTypeGate:          ExchangeTypeNameGate,
 	ExchangeTypeGateFuture:    ExchangeTypeNameGateFuture,
+	ExchangeTypeBitmart:       ExchangeTypeNameBitmart,
+	ExchangeTypeBitmartFuture: ExchangeTypeNameBitmartFuture,
 }
 
 var ExchangeTypeValue = func() map[string]ExchangeType {
@@ -71,6 +77,7 @@ func (e ExchangeType) MarshalJSON() ([]byte, error) {
 	buffer := bytes.NewBufferString(`"`)
 	buffer.WriteString(v)
 	buffer.WriteString(`"`)
+
 	return buffer.Bytes(), nil
 }
 

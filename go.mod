@@ -25,6 +25,7 @@ require (
 	github.com/wuhewuhe/bybit.go.api v1.0.1
 	go.uber.org/fx v1.20.1
 	go.uber.org/zap v1.26.0
+	golang.org/x/sync v0.6.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 

@@ -19,6 +19,7 @@ type AppConfig struct {
 	Binance  BinanceConfigs  `yaml:"binance"`
 	Bybit    BybitConfigs    `yaml:"bybit"`
 	Gate     GateConfigs     `yaml:"gate"`
+	Bitmart  BitmartConfigs  `yaml:"bitmart"`
 }
 
 func NewConfig(configPath string) (*AppConfig, error) {

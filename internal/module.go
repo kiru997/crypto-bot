@@ -1,12 +1,12 @@
 package internal
 
 import (
-	"example.com/greetings/internal/binance"
-	"example.com/greetings/internal/bybit"
-	"example.com/greetings/internal/gate"
-	"example.com/greetings/internal/kucoin"
-	"example.com/greetings/internal/mexc"
-	"example.com/greetings/internal/okx"
+	"example.com/greetings/internal/exchange/binance"
+	"example.com/greetings/internal/exchange/bitmart"
+	"example.com/greetings/internal/exchange/bybit"
+	"example.com/greetings/internal/exchange/gate"
+	"example.com/greetings/internal/exchange/kucoin"
+	"example.com/greetings/internal/exchange/mexc"
 	"example.com/greetings/internal/port/http"
 	"example.com/greetings/internal/service"
 
@@ -16,10 +16,11 @@ import (
 var Module = fx.Options(
 	kucoin.Module,
 	mexc.Module,
-	okx.Module,
+	// okx.Module,
 	binance.Module,
 	bybit.Module,
 	gate.Module,
+	bitmart.Module,
 
 	fx.Provide(service.NewCompareService),
 

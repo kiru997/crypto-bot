@@ -4,7 +4,7 @@ env: "local"
 debug: true
 log_level: "info"
 telegram:
-  bot_api_key: "bot_api_key"
+  bot_api_key: "key"
   chat_id: 1111111
 kucoin:
   spot_api_base_url: "https://api.kucoin.com"
@@ -12,7 +12,8 @@ kucoin:
   refresh_connection_minutes: 10
   spot_max_subscriptions: 30
   future_max_subscriptions: 30
-  top_change_limit: 100
+  top_change_limit: 50
+  min_vol_24h: 1000000
 mexc:
   spot_api_base_url: "https://api.mexc.com"
   ws_future_base_url: "wss://contract.mexc.com/edge"
@@ -20,7 +21,8 @@ mexc:
   refresh_connection_minutes: 10
   spot_max_subscriptions: 30
   future_max_subscriptions: 30
-  top_change_limit: 100
+  top_change_limit: 50
+  min_vol_24h: 1000000
 okx:
   ws_future_base_url: "wss://ws.okx.com:8443/ws/v5/public"
   refresh_connection_minutes: 10
@@ -30,10 +32,11 @@ binance:
   spot_api_base_url: "https://api.binance.com"
   ws_spot_base_url: "wss://stream.binance.com:9443/ws"
   ws_future_base_url: "wss://fstream.binance.com/ws"
-  refresh_connection_minutes: 10
+  refresh_connection_minutes: 60
   spot_max_subscriptions: 30
   future_max_subscriptions: 30
-  top_change_limit: 100
+  top_change_limit: 50
+  min_vol_24h: 1000000
 bybit:
   spot_api_base_url: "https://api.bybit.com"
   ws_future_base_url: "wss://stream.bybit.com/v5/public/linear"
@@ -43,7 +46,8 @@ bybit:
   spot_max_subscriptions: 10
   # unlimit future
   future_max_subscriptions: 10
-  top_change_limit: 100
+  top_change_limit: 50
+  min_vol_24h: 1000000
 gate:
   spot_api_base_url: "https://api.gateio.ws/api/v4"
   ws_future_base_url: "wss://fx-ws.gateio.ws/v4/ws/usdt"
@@ -52,3 +56,13 @@ gate:
   spot_max_subscriptions: 30
   future_max_subscriptions: 30
   top_change_limit: 100
+  min_vol_24h: 1000000
+bitmart:
+  spot_api_base_url: "https://api-cloud.bitmart.com"
+  ws_future_base_url: "wss://openapi-ws.bitmart.com/api?protocol=1.1"
+  ws_spot_base_url: "wss://ws-manager-compress.bitmart.com/api?protocol=1.1"
+  refresh_connection_minutes: 10
+  spot_max_subscriptions: 100
+  future_max_subscriptions: 100
+  top_change_limit: 50
+  min_vol_24h: 1000000

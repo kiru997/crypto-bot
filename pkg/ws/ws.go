@@ -16,7 +16,7 @@ type ws struct {
 	exchange       Exchange
 	mapConnections map[string]*dto.ConnectionItem
 	mapSymbols     map[string]string
-	msgChan        chan *MsgChan
+	msgChan        chan *Msg
 	l              sync.Mutex
 }
 
@@ -40,11 +40,11 @@ type WS interface {
 	Subscribe(symbols []string) error
 	UnSubscribe(symbols []string) error
 	RefreshConn()
-	GetMsg() chan *MsgChan
+	GetMsg() chan *Msg
 	GetConnections() map[string]*dto.ConnectionItem
 }
 
-type MsgChan struct {
+type Msg struct {
 	ExchangeType enum.ExchangeType
 	TradingType  enum.TradingType
 	Msg          []byte
@@ -56,7 +56,7 @@ func NewWS(ex Exchange) WS {
 		exchange:       ex,
 		mapConnections: make(map[string]*dto.ConnectionItem),
 		mapSymbols:     map[string]string{},
-		msgChan:        make(chan *MsgChan),
+		msgChan:        make(chan *Msg),
 		l:              sync.Mutex{},
 	}
 }
@@ -82,12 +82,11 @@ func (s *ws) CreateConnection() (*dto.ConnectionItem, error) {
 		for range ticker.C {
 			exType := s.exchange.GetConfig().ExchangeType
 			if exType == enum.ExchangeTypeBinanceFuture || exType == enum.ExchangeTypeBinance {
-				// const deadline = 10 * time.Second
-				// err := c.WriteControl(websocket.PingMessage, s.exchange.GetPingMsg(), time.Now().Add(deadline))
-				// if err != nil {
-				// 	log.Error("ws CreateConnection WriteControl ping error", log.Any("error", err),
-				// 		log.String("exchange", enum.ExchangeTypeName[s.exchange.GetConfig().ExchangeType]), log.String("cId", cID))
-				// }
+				err := c.WriteMessage(websocket.PingMessage, s.exchange.GetPingMsg())
+				if err != nil {
+					log.Error("ws CreateConnection WriteMessage PingMessage error", log.Any("error", err),
+						log.String("exchange", enum.ExchangeTypeName[s.exchange.GetConfig().ExchangeType]), log.String("cId", cID))
+				}
 
 				continue
 			}
@@ -115,7 +114,7 @@ func (s *ws) CreateConnection() (*dto.ConnectionItem, error) {
 
 				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 					connIDs := []string{}
-					
+
 					s.l.Lock()
 
 					for k := range s.mapConnections {
@@ -134,13 +133,14 @@ func (s *ws) CreateConnection() (*dto.ConnectionItem, error) {
 				continue
 			}
 
-			s.msgChan <- &MsgChan{
+			m := &Msg{
 				ExchangeType: s.exchange.GetConfig().ExchangeType,
 				TradingType:  s.exchange.GetConfig().TradingType,
 				Msg:          message,
 				ConnID:       cID,
 			}
 
+			s.msgChan <- m
 		}
 	}()
 
@@ -155,6 +155,32 @@ func (s *ws) CreateConnection() (*dto.ConnectionItem, error) {
 	}, nil
 }
 
+// func keepAlive(c *websocket.Conn, timeout time.Duration) {
+// 	ticker := time.NewTicker(timeout)
+
+// 	lastResponse := time.Now()
+// 	c.SetPongHandler(func(msg string) error {
+// 		lastResponse = time.Now()
+// 		return nil
+// 	})
+
+// 	go func() {
+// 		defer ticker.Stop()
+// 		for {
+// 			deadline := time.Now().Add(10 * time.Second)
+// 			err := c.WriteControl(websocket.PingMessage, []byte{}, deadline)
+// 			if err != nil {
+// 				return
+// 			}
+// 			<-ticker.C
+// 			if time.Since(lastResponse) > timeout {
+// 				c.Close()
+// 				return
+// 			}
+// 		}
+// 	}()
+// }
+
 func (s *ws) RefreshConn() {
 	s.l.Lock()
 
@@ -167,7 +193,7 @@ func (s *ws) RefreshConn() {
 			continue
 		}
 
-		s.UnSubscribe(v.Symbols)
+		_ = s.UnSubscribe(v.Symbols)
 		v.Close()
 
 		delete(s.mapConnections, id)
@@ -187,6 +213,7 @@ func (s *ws) RefreshConn() {
 func (s *ws) Subscribe(symbols []string) error {
 	dupSym := lo.FindDuplicates(symbols)
 	log.Debug("Subscribe items", log.Any("symbols", symbols), log.Any("dup", dupSym))
+
 	if len(symbols) == 0 {
 		return nil
 	}
@@ -207,10 +234,12 @@ func (s *ws) Subscribe(symbols []string) error {
 				conn.Symbols = append(conn.Symbols, symbol)
 				s.mapSymbols[symbol] = connID
 			}
+
 			log.Debug("ws Subscribe done", log.String("symbol", symbol), log.String("id", connID),
 				log.Int("numberConnections", len(s.mapConnections)), log.String("exchange", enum.ExchangeTypeName[s.exchange.GetConfig().ExchangeType]))
 
 			skipInit = true
+
 			break
 		}
 
@@ -242,6 +271,7 @@ func (s *ws) Subscribe(symbols []string) error {
 
 func (s *ws) UnSubscribe(symbols []string) error {
 	log.Debug("UnSubscribe items", log.Any("symbols", symbols))
+
 	for _, symbol := range symbols {
 		connID, ok := s.mapSymbols[symbol]
 		if !ok {
@@ -276,7 +306,7 @@ func (s *ws) UnSubscribe(symbols []string) error {
 	return nil
 }
 
-func (s *ws) GetMsg() chan *MsgChan {
+func (s *ws) GetMsg() chan *Msg {
 	return s.msgChan
 }
 

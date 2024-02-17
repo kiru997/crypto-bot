@@ -5,7 +5,7 @@ debug: true
 log_level: "info"
 telegram:
   bot_api_key: "key"
-  chat_id: 1111
+  chat_id: 0000000
 kucoin:
   spot_api_base_url: "https://api.kucoin.com"
   future_api_base_url: "https://api-futures.kucoin.com"
@@ -13,6 +13,7 @@ kucoin:
   spot_max_subscriptions: 30
   future_max_subscriptions: 30
   top_change_limit: 100
+  spot_min_vol_24h: 1000000
 mexc:
   spot_api_base_url: "https://api.mexc.com"
   future_api_base_url: "https://contract.mexc.com"
@@ -23,11 +24,13 @@ mexc:
   future_max_subscriptions: 30
   top_change_limit: 100
   future_top_change_limit: 100
+  spot_min_vol_24h: 1000000
 okx:
   ws_future_base_url: "wss://ws.okx.com:8443/ws/v5/public"
   refresh_connection_minutes: 10
   spot_max_subscriptions: 30
   future_max_subscriptions: 30
+  spot_min_vol_24h: 1000000
 binance:
   spot_api_base_url: "https://api.binance.com"
   ws_spot_base_url: "wss://stream.binance.com:9443/ws"
@@ -36,6 +39,7 @@ binance:
   spot_max_subscriptions: 30
   future_max_subscriptions: 30
   top_change_limit: 100
+  spot_min_vol_24h: 1000000
 bybit:
   spot_api_base_url: "https://api.bybit.com"
   ws_future_base_url: "wss://stream.bybit.com/v5/public/linear"
@@ -46,6 +50,7 @@ bybit:
   # unlimit future
   future_max_subscriptions: 10
   top_change_limit: 100
+  spot_min_vol_24h: 1000000
 gate:
   spot_api_base_url: "https://api.gateio.ws/api/v4"
   ws_future_base_url: "wss://fx-ws.gateio.ws/v4/ws/usdt"
@@ -54,3 +59,4 @@ gate:
   spot_max_subscriptions: 30
   future_max_subscriptions: 30
   top_change_limit: 100
+  spot_min_vol_24h: 1000000

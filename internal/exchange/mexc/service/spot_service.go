@@ -71,8 +71,8 @@ func (s *spotService) TopChange(ctx context.Context) ([]string, error) {
 	})
 
 	tickers = lo.Filter(tickers, func(item *dto.SpotTicker24hResItem, _ int) bool {
-		vol, _ := item.Volume.Float64()
-		return vol >= s.configs.Mexc.MinVol24h
+		vol, _ := item.QuoteVolume.Float64()
+		return vol >= s.configs.Mexc.SpotMinVol24h
 	})
 
 	sort.Slice(tickers, func(i, j int) bool {
@@ -142,6 +142,8 @@ func (s *spotService) ProcessTickerMsg(cha chan *idto.ComparePriceChanMsg) {
 
 			continue
 		}
+
+		//TODO: filter vol
 
 		cha <- &idto.ComparePriceChanMsg{
 			ExchangeType: msg.ExchangeType,

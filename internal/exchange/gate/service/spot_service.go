@@ -56,7 +56,7 @@ func (s *spotService) TopChange(ctx context.Context) ([]string, error) {
 
 	tickers = lo.Filter(tickers, func(item gateapi.Ticker, _ int) bool {
 		vol, _ := strconv.ParseFloat(item.BaseVolume, 64)
-		return vol >= s.configs.Gate.MinVol24h
+		return vol >= s.configs.Gate.SpotMinVol24h
 	})
 
 	sort.Slice(tickers, func(i, j int) bool {
@@ -123,6 +123,20 @@ func (s *spotService) ProcessTickerMsg(cha chan *idto.ComparePriceChanMsg) {
 				log.String("tradingType", enum.TradingTypeName[msg.TradingType]),
 				log.Any("error", err), log.ByteString("msg", message))
 
+			continue
+		}
+
+		vol, err := tickerMsg.Result.QuoteVolume.Float64()
+		if err != nil {
+			log.Error("ProcessTickerMsg parse vol error",
+				log.String("exchange", enum.ExchangeTypeName[msg.ExchangeType]),
+				log.String("tradingType", enum.TradingTypeName[msg.TradingType]),
+				log.Any("error", err), log.ByteString("msg", message))
+
+			continue
+		}
+
+		if vol < s.configs.Bybit.SpotMinVol24h {
 			continue
 		}
 

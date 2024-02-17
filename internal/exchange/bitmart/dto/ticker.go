@@ -30,7 +30,7 @@ type SpotTickerResponse struct {
 }
 
 type WSSpotTickerResponseItem struct {
-	BaseVolume24h string      `json:"base_volume_24h"`
+	BaseVolume24h json.Number `json:"base_volume_24h"`
 	High24h       string      `json:"high_24h"`
 	LastPrice     json.Number `json:"last_price"`
 	Low24h        string      `json:"low_24h"`

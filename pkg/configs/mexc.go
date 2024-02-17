@@ -10,5 +10,5 @@ type MexcConfigs struct {
 	FutureMaxSubscriptions   int     `yaml:"future_max_subscriptions"`
 	TopChangeLimit           int     `yaml:"top_change_limit"`
 	FutureTopChangeLimit     int     `yaml:"future_top_change_limit"`
-	MinVol24h                float64 `yaml:"min_vol_24h"`
+	SpotMinVol24h            float64 `yaml:"spot_min_vol_24h"`
 }

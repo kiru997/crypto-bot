@@ -47,8 +47,8 @@ type SpotTicker24hResItem struct {
 	OpenPrice          string      `json:"openPrice"`
 	HighPrice          string      `json:"highPrice"`
 	LowPrice           string      `json:"lowPrice"`
-	Volume             json.Number `json:"volume"`
-	QuoteVolume        string      `json:"quoteVolume"`
+	Volume             string      `json:"volume"`
+	QuoteVolume        json.Number `json:"quoteVolume"`
 	OpenTime           int64       `json:"openTime"`
 	CloseTime          int64       `json:"closeTime"`
 	Count              *int64      `json:"count"`

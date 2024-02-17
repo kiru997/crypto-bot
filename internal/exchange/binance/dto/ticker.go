@@ -15,7 +15,7 @@ type TickerMsg struct {
 	HighPrice          string      `json:"h"`
 	LowPrice           string      `json:"l"`
 	Volume             string      `json:"v"`
-	QuoteVolume        string      `json:"q"`
+	QuoteVolume        json.Number `json:"q"`
 	OpenTime           int64       `json:"O"`
 	CloseTime          int64       `json:"C"`
 	FirstTradeID       int         `json:"F"`
@@ -40,8 +40,8 @@ type SpotTicker24h struct {
 	OpenPrice          string      `json:"openPrice"`
 	HighPrice          string      `json:"highPrice"`
 	LowPrice           string      `json:"lowPrice"`
-	Volume             json.Number `json:"volume"`
-	QuoteVolume        string      `json:"quoteVolume"`
+	Volume             string      `json:"volume"`
+	QuoteVolume        json.Number `json:"quoteVolume"`
 	OpenTime           int64       `json:"openTime"`
 	CloseTime          int64       `json:"closeTime"`
 	FirstID            int64       `json:"firstId"`

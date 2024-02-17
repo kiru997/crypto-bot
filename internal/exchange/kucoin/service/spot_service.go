@@ -58,7 +58,7 @@ func (s *spotService) TopChange(_ context.Context) ([]string, error) {
 
 	tickers = lo.Filter(tickers, func(item *kucoin.TickerModel, _ int) bool {
 		vol, _ := strconv.ParseFloat(item.VolValue, 64)
-		return vol >= s.configs.Kucoin.MinVol24h
+		return vol >= s.configs.Kucoin.SpotMinVol24h
 	})
 
 	sort.Slice(tickers, func(i, j int) bool {
@@ -127,6 +127,8 @@ func (s *spotService) ProcessTickerMsg(cha chan *idto.ComparePriceChanMsg) {
 
 			continue
 		}
+
+		//TODO: filter vol
 
 		cha <- &idto.ComparePriceChanMsg{
 			Symbol:       symbol,

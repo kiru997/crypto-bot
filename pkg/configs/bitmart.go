@@ -8,5 +8,5 @@ type BitmartConfigs struct {
 	SpotMaxSubscriptions     int     `yaml:"spot_max_subscriptions"`
 	FutureMaxSubscriptions   int     `yaml:"future_max_subscriptions"`
 	TopChangeLimit           int     `yaml:"top_change_limit"`
-	MinVol24h                float64 `yaml:"min_vol_24h"`
+	SpotMinVol24h            float64 `yaml:"spot_min_vol_24h"`
 }

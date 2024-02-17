@@ -71,7 +71,8 @@ func (s *futureService) TopChange(ctx context.Context) ([]string, error) {
 	})
 
 	tickers = lo.Filter(tickers, func(item *dto.FutureTickerResponseData, _ int) bool {
-		return item.Volume24 >= s.configs.Mexc.MinVol24h
+		//TODO change to future config
+		return item.Volume24 >= s.configs.Mexc.SpotMinVol24h
 	})
 
 	sort.Slice(tickers, func(i, j int) bool {

@@ -9,7 +9,7 @@ type WSSpotTickerMessageResult struct {
 	HighestBid       string      `json:"highest_bid"`
 	ChangePercentage string      `json:"change_percentage"`
 	BaseVolume       string      `json:"base_volume"`
-	QuoteVolume      string      `json:"quote_volume"`
+	QuoteVolume      json.Number `json:"quote_volume"`
 	High24h          string      `json:"high_24h"`
 	Low24h           string      `json:"low_24h"`
 }

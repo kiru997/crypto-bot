@@ -8,7 +8,7 @@ type WSSpotTickerMessageData struct {
 	HighPrice24h  string      `json:"highPrice24h"`
 	LowPrice24h   string      `json:"lowPrice24h"`
 	PrevPrice24h  string      `json:"prevPrice24h"`
-	Volume24h     string      `json:"volume24h"`
+	Volume24h     json.Number `json:"volume24h"`
 	Turnover24h   string      `json:"turnover24h"`
 	Price24hPcnt  string      `json:"price24hPcnt"`
 	USDIndexPrice string      `json:"usdIndexPrice"`

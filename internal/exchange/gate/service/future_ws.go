@@ -22,7 +22,7 @@ type futureExchange struct {
 func NewFutureExchange(configs *configs.AppConfig) ws.Exchange {
 	return &futureExchange{
 		configs:       configs,
-		filterChannel: helper.ArrayToMap([]string{constants.GateWSChannelFuturePong, constants.GateWSEventSubscribe}),
+		filterChannel: helper.ArrayToMap([]string{constants.GateWSChannelFuturePong, constants.GateWSEventSubscribe,constants.GateWSEventUnSubscribe}),
 	}
 }
 

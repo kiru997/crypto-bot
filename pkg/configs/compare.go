@@ -8,9 +8,9 @@ import (
 )
 
 type CompareConfigExchange struct {
-	Exchange        enum.ExchangeType   `json:"exchange"`
-	Enable          bool                `json:"enable"`
-	FutureExchanges []enum.ExchangeType `json:"future_exchanges"`
+	Exchange         enum.ExchangeType   `json:"exchange"`
+	Enable           bool                `json:"enable"`
+	CompareExchanges []enum.ExchangeType `json:"compare_exchanges"`
 }
 
 type CompareConfig []*CompareConfigExchange

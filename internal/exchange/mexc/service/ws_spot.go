@@ -69,5 +69,5 @@ func (s *spotExchange) GetPingMsg() []byte {
 func (s *spotExchange) FilterMsg(message []byte) bool {
 	msg := jsoniter.Get(message, "msg").ToString()
 	_, skip := s.filterChannel[msg]
-	return skip || strings.Contains(msg, constants.BookerTickerParamsPrefix)
+	return skip || strings.Contains(msg, constants.BookerTickerParamsPrefix) || strings.Contains(msg, "no subscription success")
 }

@@ -2,7 +2,7 @@ package dto
 
 import "encoding/json"
 
-type Data struct {
+type TickerMessageData struct {
 	Symbol                  string    `json:"symbol"`
 	LastPrice               float64   `json:"lastPrice"`
 	RiseFallRate            float64   `json:"riseFallRate"`
@@ -26,10 +26,10 @@ type Data struct {
 }
 
 type TickerMessage struct {
-	Symbol  string `json:"symbol"`
-	Data    Data   `json:"data"`
-	Channel string `json:"channel"`
-	Ts      int64  `json:"ts"`
+	Symbol  string            `json:"symbol"`
+	Data    TickerMessageData `json:"data"`
+	Channel string            `json:"channel"`
+	Ts      int64             `json:"ts"`
 }
 
 type SpotTicker24hRes []*SpotTicker24hResItem

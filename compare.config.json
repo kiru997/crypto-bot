@@ -1,45 +1,21 @@
 [
     {
-        "exchange": "mexc",
-        "enable": false,
-        "future_exchanges": [
-            "mexc_future",
-            "kucoin_future",
-            "binance_future",
-            "bybit_future",
-            "gate_future",
-            "bitmart_future"
-
-        ]
-    },
-    {
-        "exchange": "kucoin",
+        "exchange": "mexc_future",
         "enable": true,
-        "future_exchanges": [
-            "mexc_future",
-            "kucoin_future",
-            "binance_future",
-            "bybit_future",
-            "gate_future",
-            "bitmart_future"
-        ]
-    },
-    {
-        "exchange": "binance",
-        "enable": false,
-        "future_exchanges": [
-            "mexc_future",
-            "kucoin_future",
-            "binance_future",
-            "bybit_future",
-            "gate_future",
-            "bitmart_future"
+        "compare_exchanges": [
+            "mexc",
+            "kucoin",
+            "binance",
+            "gate",
+            "bybit",
+            "bitmart",
+            "okx"
         ]
     },
     {
         "exchange": "bybit",
         "enable": false,
-        "future_exchanges": [
+        "compare_exchanges": [
             "mexc_future",
             "kucoin_future",
             "binance_future",
@@ -51,7 +27,7 @@
     {
         "exchange": "gate",
         "enable": false,
-        "future_exchanges": [
+        "compare_exchanges": [
             "mexc_future",
             "kucoin_future",
             "binance_future",
@@ -63,7 +39,7 @@
     {
         "exchange": "bitmart",
         "enable": false,
-        "future_exchanges": [
+        "compare_exchanges": [
             "mexc_future",
             "kucoin_future",
             "binance_future",

@@ -16,7 +16,7 @@ type CompareSymbolNotiExchangeItem struct {
 
 type CompareSymbolNotiItem struct {
 	Symbol       string
-	SpotPrice    []*CompareSymbolNotiExchangeItem
+	SpotPrices   []*CompareSymbolNotiExchangeItem
 	FuturePrices []*CompareSymbolNotiExchangeItem
 }
 

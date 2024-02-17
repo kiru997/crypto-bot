@@ -20,7 +20,7 @@ type spotExchange struct {
 func NewSpotExchange(configs *configs.AppConfig) ws.Exchange {
 	return &spotExchange{
 		configs:       configs,
-		filterChannel: helper.ArrayToMap([]string{constants.GateWSChannelSpotPong, constants.GateWSEventSubscribe}),
+		filterChannel: helper.ArrayToMap([]string{constants.GateWSChannelSpotPong, constants.GateWSEventSubscribe, constants.GateWSEventUnSubscribe}),
 	}
 }
 

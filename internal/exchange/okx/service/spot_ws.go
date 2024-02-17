@@ -2,12 +2,14 @@ package service
 
 import (
 	"encoding/json"
+	"strings"
 
 	"example.com/greetings/pkg/configs"
 	"example.com/greetings/pkg/constants"
 	"example.com/greetings/pkg/enum"
 	"example.com/greetings/pkg/helper"
 	"example.com/greetings/pkg/ws"
+	jsoniter "github.com/json-iterator/go"
 )
 
 type spotExchange struct {
@@ -18,7 +20,7 @@ type spotExchange struct {
 func NewSpotExchange(configs *configs.AppConfig) ws.Exchange {
 	return &spotExchange{
 		configs:       configs,
-		filterChannel: helper.ArrayToMap([]string{}),
+		filterChannel: helper.ArrayToMap([]string{constants.OkxOPSubscribe, constants.OkxOPUnSubscribe}),
 	}
 }
 
@@ -76,5 +78,15 @@ func (s *spotExchange) FilterMsg(message []byte) bool {
 		return true
 	}
 
-	return false
+	event := jsoniter.Get(message, "event").ToString()
+	_, skip := s.filterChannel[event]
+
+	if event == "error" {
+		msg := jsoniter.Get(message, "msg").ToString()
+		if strings.Contains(msg, "doesn't exist") {
+			return true
+		}
+	}
+
+	return skip
 }

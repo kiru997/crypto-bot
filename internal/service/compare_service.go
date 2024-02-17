@@ -16,6 +16,7 @@ import (
 	gs "example.com/greetings/internal/exchange/gate/service"
 	ks "example.com/greetings/internal/exchange/kucoin/service"
 	ms "example.com/greetings/internal/exchange/mexc/service"
+	okxs "example.com/greetings/internal/exchange/okx/service"
 
 	"example.com/greetings/pkg/configs"
 	"example.com/greetings/pkg/constants"
@@ -37,7 +38,7 @@ type CompareService interface {
 	GetConnections() map[string]*dto.ConnectionItem
 }
 
-type SpotService interface {
+type BaseCompareService interface {
 	TopChange(context.Context) ([]string, error)
 }
 
@@ -69,8 +70,7 @@ func NewCompareService(configs *configs.AppConfig,
 	gateFutureService gs.FutureService,
 	bitmartService bms.SpotService,
 	bitmartFutureService bms.FutureService,
-
-	// okxFutureService okxs.FutureService,
+	okxService okxs.SpotService,
 ) CompareService {
 	res := map[enum.ExchangeType][]enum.ExchangeType{}
 
@@ -79,7 +79,7 @@ func NewCompareService(configs *configs.AppConfig,
 			continue
 		}
 
-		res[v.Exchange] = append(res[v.Exchange], v.FutureExchanges...)
+		res[v.Exchange] = append(res[v.Exchange], v.CompareExchanges...)
 	}
 
 	return &compareService{
@@ -100,6 +100,7 @@ func NewCompareService(configs *configs.AppConfig,
 			enum.ExchangeTypeGateFuture:    gateFutureService,
 			enum.ExchangeTypeBitmart:       bitmartService,
 			enum.ExchangeTypeBitmartFuture: bitmartFutureService,
+			enum.ExchangeTypeOkx:           okxService,
 		},
 		mapExchangeCompare: res,
 	}
@@ -130,7 +131,7 @@ func (s *compareService) GetAvailExchange() []enum.ExchangeType {
 		}
 
 		res = append(res, v.Exchange)
-		res = append(res, v.FutureExchanges...)
+		res = append(res, v.CompareExchanges...)
 	}
 
 	res = lo.Uniq(res)
@@ -192,7 +193,7 @@ func (s *compareService) WatchTopChange(jobID string) {
 	defer cancel()
 
 	g, ctx := errgroup.WithContext(jCtx)
-	
+
 	for _, v := range s.GetBaseCompareExchange() {
 		ex, ok := s.mapTickerService[v]
 		if !ok {
@@ -201,7 +202,13 @@ func (s *compareService) WatchTopChange(jobID string) {
 		}
 
 		g.Go(func() error {
-			s, err := ex.(SpotService).TopChange(ctx)
+			bcs, ok := ex.(BaseCompareService)
+			if !ok {
+				log.Error("compareService convert BaseCompareService TopChange error", log.String("exchange", enum.ExchangeTypeName[v]))
+				return nil
+			}
+
+			s, err := bcs.TopChange(ctx)
 			if err != nil {
 				log.Error("compareService WatchTopChange TopChange error", log.Any("error", err), log.String("exchange", enum.ExchangeTypeName[v]))
 				return nil
@@ -294,7 +301,7 @@ func (s *compareService) ProcessMsg() {
 func (s *compareService) mapPrice(item *dto.CompareSymbolNotiItem, msg *dto.ComparePriceChanMsg) {
 	mapItems := map[enum.ExchangeType]*dto.CompareSymbolNotiExchangeItem{}
 
-	list := item.SpotPrice
+	list := item.SpotPrices
 	if msg.TradingType == enum.TradingTypeFuture {
 		list = item.FuturePrices
 	}
@@ -316,7 +323,7 @@ func (s *compareService) mapPrice(item *dto.CompareSymbolNotiItem, msg *dto.Comp
 		if msg.TradingType == enum.TradingTypeFuture {
 			item.FuturePrices = list
 		} else {
-			item.SpotPrice = list
+			item.SpotPrices = list
 		}
 
 		return
@@ -326,12 +333,53 @@ func (s *compareService) mapPrice(item *dto.CompareSymbolNotiItem, msg *dto.Comp
 	currentPrice.LastPriceAt = msg.At
 }
 
-func (s *compareService) validNoti(item *dto.CompareSymbolNotiItem) {
-	if len(item.SpotPrice) == 0 || len(item.FuturePrices) == 0 {
+func (s *compareService) notify(symbol string, baseItem *dto.CompareSymbolNotiExchangeItem, fList []*dto.CompareSymbolNotiExchangeItem) {
+	err := retry.Do(
+		func() error {
+			bot, err := tgbotapi.NewBotAPI(s.configs.Telegram.BotAPIKey)
+			if err != nil {
+				return err
+			}
+
+			bot.Debug = true
+
+			u := tgbotapi.NewUpdate(0)
+			u.Timeout = 60
+
+			tz, _ := time.LoadLocation(constants.TimeZoneHCM)
+
+			text := fmt.Sprintf(`
+				%s - Ex: %s
+				Price: %.6f
+				Time: %s,
+			`, symbol, enum.ExchangeTypeName[baseItem.ExchangeType],
+				baseItem.Price,
+				baseItem.LastPriceAt.In(tz).Format(constants.TimeHHMMSSFormat),
+			)
+
+			for _, v := range fList {
+				text += fmt.Sprintf("\n - %s : %s - P: %.6f - T :%s",
+					enum.ExchangeTypeName[v.ExchangeType], fmt.Sprintf("%.2f", v.Percent)+"%", v.Price,
+					v.LastPriceAt.In(tz).Format(constants.TimeHHMMSSFormat))
+			}
+
+			msg := tgbotapi.NewMessage(s.configs.Telegram.ChatID, text)
+			_, err = bot.Send(msg)
+
+			return err
+		},
+		retry.Delay(time.Second),
+		retry.LastErrorOnly(true),
+	)
+
+	if err != nil {
+		log.Error("processMsg tgbotapi error", log.Any("error", err))
 		return
 	}
+}
 
-	for _, sp := range item.SpotPrice {
+func (s *compareService) compare(symbol string, from, to []*dto.CompareSymbolNotiExchangeItem) {
+	for _, sp := range from {
 		fList := []*dto.CompareSymbolNotiExchangeItem{}
 
 		exchanges, ok := s.mapExchangeCompare[sp.ExchangeType]
@@ -339,7 +387,7 @@ func (s *compareService) validNoti(item *dto.CompareSymbolNotiItem) {
 			continue
 		}
 
-		for _, f := range item.FuturePrices {
+		for _, f := range to {
 			_, exist := lo.Find(exchanges, func(ex enum.ExchangeType) bool {
 				return ex == f.ExchangeType
 			})
@@ -380,49 +428,18 @@ func (s *compareService) validNoti(item *dto.CompareSymbolNotiItem) {
 			continue
 		}
 
-		err := retry.Do(
-			func() error {
-				bot, err := tgbotapi.NewBotAPI(s.configs.Telegram.BotAPIKey)
-				if err != nil {
-					return err
-				}
-
-				bot.Debug = true
-
-				u := tgbotapi.NewUpdate(0)
-				u.Timeout = 60
-
-				tz, _ := time.LoadLocation(constants.TimeZoneHCM)
-
-				text := fmt.Sprintf(`
-					%s - Ex: %s - Type: %s
-					Price: %.6f
-					Time: %s,
-				`, item.Symbol, enum.ExchangeTypeName[sp.ExchangeType], enum.TradingTypeName[enum.TradingTypeSpot],
-					sp.Price,
-					sp.LastPriceAt.In(tz).Format(constants.TimeHHMMSSFormat),
-				)
-
-				for _, v := range fList {
-					text += fmt.Sprintf("\n - %s : %s - P: %.6f - T :%s",
-						enum.ExchangeTypeName[v.ExchangeType], fmt.Sprintf("%.2f", v.Percent)+"%", v.Price,
-						v.LastPriceAt.In(tz).Format(constants.TimeHHMMSSFormat))
-				}
-
-				msg := tgbotapi.NewMessage(s.configs.Telegram.ChatID, text)
-				_, err = bot.Send(msg)
-
-				return err
-			},
-			retry.Delay(time.Second),
-			retry.LastErrorOnly(true),
-		)
-
-		if err != nil {
-			log.Error("processMsg tgbotapi error", log.Any("error", err))
-			return
-		}
+		s.notify(symbol, sp, fList)
 	}
+}
+
+func (s *compareService) validNoti(item *dto.CompareSymbolNotiItem) {
+	if len(item.SpotPrices) == 0 || len(item.FuturePrices) == 0 {
+		return
+	}
+
+	s.compare(item.Symbol, item.SpotPrices, item.FuturePrices)
+	s.compare(item.Symbol, item.FuturePrices, item.SpotPrices)
+
 }
 
 func (s *compareService) mergePrice(msg *dto.ComparePriceChanMsg) {

@@ -182,16 +182,14 @@ func (s *ws) CreateConnection() (*dto.ConnectionItem, error) {
 // }
 
 func (s *ws) RefreshConn() {
-	s.l.Lock()
-
-	defer s.l.Unlock()
-
 	symbols := []string{}
 
 	for id, v := range s.mapConnections {
 		if time.Since(v.T) < time.Duration(s.exchange.GetConfig().RefreshConnectionMinutes)*time.Minute {
 			continue
 		}
+
+		symbols = append(symbols, v.Symbols...)
 
 		_ = s.UnSubscribe(v.Symbols)
 		v.Close()
@@ -200,8 +198,6 @@ func (s *ws) RefreshConn() {
 
 		log.Debug("ws RefreshConn delete conn", log.String("id", id), log.Time("initAt", v.T),
 			log.String("exchange", enum.ExchangeTypeName[s.exchange.GetConfig().ExchangeType]))
-
-		symbols = append(symbols, v.Symbols...)
 	}
 
 	err := s.Subscribe(symbols)
@@ -217,6 +213,10 @@ func (s *ws) Subscribe(symbols []string) error {
 	if len(symbols) == 0 {
 		return nil
 	}
+
+	s.l.Lock()
+
+	defer s.l.Unlock()
 
 	for _, symbol := range symbols {
 		skipInit := false
@@ -271,6 +271,9 @@ func (s *ws) Subscribe(symbols []string) error {
 
 func (s *ws) UnSubscribe(symbols []string) error {
 	log.Debug("UnSubscribe items", log.Any("symbols", symbols))
+	s.l.Lock()
+
+	defer s.l.Unlock()
 
 	for _, symbol := range symbols {
 		connID, ok := s.mapSymbols[symbol]

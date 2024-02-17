@@ -60,3 +60,12 @@ gate:
   future_max_subscriptions: 30
   top_change_limit: 100
   spot_min_vol_24h: 1000000
+bitmart:
+  spot_api_base_url: "https://api-cloud.bitmart.com"
+  ws_future_base_url: "wss://openapi-ws.bitmart.com/api?protocol=1.1"
+  ws_spot_base_url: "wss://ws-manager-compress.bitmart.com/api?protocol=1.1"
+  refresh_connection_minutes: 10
+  spot_max_subscriptions: 100
+  future_max_subscriptions: 100
+  top_change_limit: 50
+  spot_min_vol_24h: 1000000
